@@ -1,0 +1,107 @@
+Building FTP server from scratch
+
+Objective:
+
+Understand and implement the FTP protocol fundamentals
+
+Build a multi-client concurrent socket server (using threads)
+
+Parse and handle FTP control commands (USER, PASS, LIST, etc.)
+
+Implement data connections for file transfers
+
+Handle file system operations: directory listing, file read/write
+
+Support passive mode FTP (PASV) for compatibility with clients like FileZilla
+
+Provide a testable and documented codebase
+
+Protocol :
+FTP----> 2 Tcp connections --> 1.port 21 --> for commands
+					 2.port 20 --> for file operations
+Module Plan:
+
+Module File				Responsibility
+
+ftp_server.py		Launches control socket, accepts clients
+ftp_session.py		Handles per-client connection/thread
+command_parser.py		Parses FTP commands (e.g., USER, LIST)
+data_channel.py		Opens passive socket for data transfer
+file_manager.py		Lists directories, reads/writes files
+auth.py			Validates hardcoded user/passwords
+config.py			Configuration for ports, root path
+utils.py			Path sanitization, error handling
+test/				Manual or automated client tests
+
+
+Technologies Used:
+Language: Python 3.x
+
+Networking: TCP sockets
+
+Concurrency: threading.Thread
+
+File I/O: Python’s built-in os and open()
+
+Testing Tools: FileZilla, Windows ftp, curl
+
+
+Command Types in FTP
+Category			Commands					Purpose
+Authentication		USER, PASS, QUIT				Login, Logout
+System Info	SYST, 	FEAT, PWD, TYPE, NOOP			Info, compatibility
+Navigation			CWD, CDUP, MKD, RMD, DELE		Folder/File ops
+Directory			LIST, NLST	Show files
+File Transfer		RETR, STOR, APPE				Download/Upload
+Transfer Setup		PASV, PORT, TYPE, MODE			Control how file transfer happens
+
+
+Minimum Command Set for our Project:
+
+Command			What Client Does			What Server Does
+USER			Sends username			Replies 331 → need password
+PASS			Sends password			Replies 230 → logged in
+QUIT			Ends session			Replies 221 → goodbye
+SYST			Asks system type			Replies 215 UNIX Type: L8
+PWD			Asks current dir			Replies 257 "/folder"
+TYPE			Sets transfer type (A or I)	Replies 200 Type set to I
+PASV			Requests passive mode		Server opens data socket, replies IP/PORT
+LIST			Lists directory files		Opens data connection, sends list
+RETR			Download a file			Sends file bytes via data channel
+STOR			Upload a file			Receives file data via data channel
+
+
+control connection :
+
+         The communication path between the USER-PI and SERVER-PI for
+         the exchange of commands and replies.  This connection follows
+         the Telnet Protocol.
+
+data connection :
+
+         A full duplex connection over which data is transferred, in a
+         specified mode and type. The data transferred may be a part of
+         a file, an entire file or a number of files.  The path may be
+         between a server-DTP and a user-DTP, or between two
+         server-DTPs.
+
+FTP data types :
+
+	ASCII TYPE :
+		1.This is the default type and must be accepted by all FTP
+            implementations.
+		2.It is intended primarily for the transfer
+            of text files
+
+	EBCDIC TYPE :
+		1.This type is intended for efficient transfer between hosts
+            which use EBCDIC for their internal character
+            representation.
+
+	IMAGE TYPE :
+		1.Image type is intended for the efficient storage and
+            retrieval of files and for the transfer of binary data.  It
+            is recommended that this type be accepted by all FTP
+            implementations.
+
+		
